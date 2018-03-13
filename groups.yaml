@@ -1,0 +1,122 @@
+## ZX: My groups
+
+#
+############################################################
+
+# default_view:
+heating_view:
+  view: yes
+  entities:
+    - group.trv_status
+    - group.evohome_quickaction
+    - group.bypass_radiator
+    - group.input_boolean
+    
+presence_view:
+  view: yes
+  entities:
+    - group.everyone
+    - group.people_status
+    - proximity.home
+    - group.presence_input_select
+    - script.kids_tracker
+    - group.person_tracker
+    
+
+#
+############################################################
+presence_input_select:
+  view: no
+  entities:
+    - input_select.dwb_status_dropdown
+    - input_select.nab_status_dropdown
+    - input_select.akb_status_dropdown
+    - input_select.rmb_status_dropdown
+
+#
+############################################################
+bypass_radiator:
+  name: Select bypass radiator(s)
+# icon: mdi:account-multiple
+  view: no
+  control: hidden
+  entities:
+    - input_boolean.main_bypass
+    - input_boolean.upstairs_bypass
+
+# bypass_radiator2:
+# name: Select 2 bypass radiator(s)
+# icon: mdi:account-multiple
+# view: no
+# control: hidden
+# entities:
+#   - input_boolean.main_bypass
+#   - input_boolean.upstairs_bypass
+#   - automation.enable_main_bypass_each_morning
+#   - automation.disable_upstairs_bypass_each_morning
+#   - automation.enable_upstairs_bypass_each_evening
+#   - automation.disable_main_bypass_after_bedtime
+
+trv_status:
+# view: no
+  name: Setpoints
+  entities:
+    - sensor.setpoint_bathroom
+    - sensor.setpoint_beans_room
+    - sensor.setpoint_bedroom
+    - sensor.setpoint_front_room
+    - sensor.setpoint_kitchen
+    - sensor.setpoint_main_room
+    - sensor.setpoint_noos_room
+    
+evohome_quickaction:
+  name: Evohome Quick Action
+# default_view:
+# view: yes
+# icon: mdi:heater
+  entities:
+    - script.evohome_default
+    - input_select.evohome_quickaction
+#   - script.evohome_economy
+#   - script.evohome_away
+#   - script.evohome_day_off
+#   - script.evohome_heating_off
+#   - script.evohome_custom
+
+everyone:
+  name: Trackers
+  icon: mdi:account-multiple
+  view: no
+  entities:
+    - device_tracker.dwb
+    - device_tracker.nab
+
+people_status:
+  name: Family
+  entities:
+    - sensor.dwb_status
+    - sensor.nab_status
+    - sensor.akb_status
+    - sensor.rmb_status
+    
+kids_tracker:
+  name: Children tracker scripts
+  entities:
+#   - script.mark_kids_as_home
+    - script.mark_kids_as_away
+    - sensor.mark_kids_as_at_school
+    - sensor.mark_kids_as_at_capoeria
+    - sensor.mark_kids_as_at_swimming
+
+person_tracker:
+  name: Person tracker scripts
+  entities:
+    - script.mark_person_as_just_arrived
+    - script.mark_person_as_home
+    - script.mark_person_as_just_left
+    - script.mark_person_as_away
+    - script.mark_person_as_extended_away
+
+    
+
+ 

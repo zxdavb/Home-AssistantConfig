@@ -1,0 +1,17 @@
+nab:
+  hide_if_away: false
+  icon:
+  mac:
+  name: NAB
+  picture:
+  track: true
+  vendor:
+
+dwb:
+  hide_if_away: false
+  icon:
+  mac:
+  name: DWB
+  picture:
+  track: true
+  vendor:

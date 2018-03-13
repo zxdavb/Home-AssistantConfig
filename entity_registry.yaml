@@ -1,0 +1,30 @@
+switch.switch:
+  platform: zwave
+  unique_id: 4-72057594109837312
+switch.switch_2:
+  platform: zwave
+  unique_id: 6-72057594143391744
+sensor.danfoss_popp_radiator_thermostat_temperature:
+  platform: zwave
+  unique_id: 7-72057594160365586
+climate.danfoss_popp_radiator_thermostat_heating_1:
+  platform: zwave
+  unique_id: 7-72057594160660498
+sensor.danfoss_popp_radiator_thermostat_temperature_2:
+  platform: zwave
+  unique_id: 8-72057594177142802
+climate.danfoss_popp_radiator_thermostat_heating_1_2:
+  platform: zwave
+  unique_id: 8-72057594177437714
+sensor.downstairs_barometric_pressure:
+  platform: zwave
+  unique_id: 7-72057594160365714
+sensor.downstairs_barometric_pressure_2:
+  platform: zwave
+  unique_id: 7-72057594160365602
+sensor.downstairs_relative_humidity:
+  platform: zwave
+  unique_id: 7-72057594160365650
+sensor.downstairs_luminance:
+  platform: zwave
+  unique_id: 7-72057594160365618

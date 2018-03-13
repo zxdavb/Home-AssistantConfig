@@ -1,0 +1,463 @@
+#
+############################################################
+- alias: TEST Send an alert if any thermostat switches to 5C
+### ???
+# hide_entity: yes
+# initial_state: on
+  trigger: [
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_front_room" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_main_room" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_kitchen" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_bathroom" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_bedroom" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_noos_room" },
+    { "platform": "numeric_state", "below": 5.5, "entity_id": "sensor.setpoint_beans_room" }
+    ]
+  condition: []
+  action:
+  - service: notify.html5_notifier
+### The following works
+#   data_template: { "title": "Open Window Detected", "message": "A TRV has changed it's setpoint to 5C." }
+### The following works
+    data_template: 
+      title: "Open Window Detected"
+      message: "x{{ trigger.entity_id }}x has changed it's setpoint to 5C (from {{ trigger.from_state.state }}C)."
+#   data_template: {
+#     "title": "TEST2: Open Window Detected", 
+#     "message": "TEST2: {{trigger.entity_id}} has changed it's setpoint to 5C."
+#     }
+ 
+ 
+- alias: Ensure that at least one Bypass is always enabled
+### Ensure there is always at least one Bypass radiator
+  hide_entity: yes
+# initial_state: on
+  trigger:
+  - platform: state
+    entity_id: input_boolean.main_bypass
+    to: 'off'
+  - platform: state
+    entity_id: input_boolean.upstairs_bypass
+    to: 'off'
+  condition: 
+    - condition: state 
+      entity_id: group.bypass_radiator
+      state: 'off'
+  action:
+  - service: input_boolean.turn_on
+    data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'input_boolean.main_bypass' %}
+            input_boolean.upstairs_bypass
+          {% else %}
+            input_boolean.main_bypass
+          {% endif %}
+ 
+ 
+#
+- alias: Enable Main bypass each Morning
+  hide_entity: yes
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at: 06:00:00
+  condition:
+    condition: time
+    after: '05:59:59'
+    before: '23:00:00'
+  action:
+  - service: script.enable_main_bypass
+
+- alias: Enable Main bypass when Asked
+  hide_entity: yes
+  trigger:
+  - platform: state
+    entity_id: input_boolean.main_bypass
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: script.enable_main_bypass
+
+#
+- alias: Disable Upstairs bypass each Morning
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at: '06:30:00'
+  condition:
+    condition: time
+    after: '06:29:59'
+    before: '15:30:00'
+  action:
+  - service: script.disable_upstairs_bypass
+
+- alias: Disable Upstairs bypass when Asked
+  hide_entity: yes
+  trigger:
+  - platform: state
+    entity_id: input_boolean.upstairs_bypass
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: script.disable_upstairs_bypass
+
+
+#
+- alias: Enable Upstairs bypass each Evening
+  hide_entity: yes
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at: '15:30:00'
+  condition:
+    condition: time
+    after: '15:29:59'
+    before: '06:30:00'
+  action:
+  - service: script.enable_upstairs_bypass
+
+- alias: Enable Upstairs bypass when Asked
+  hide_entity: yes
+  trigger:
+  - platform: state
+    entity_id: input_boolean.upstairs_bypass
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: script.enable_upstairs_bypass
+
+  
+#
+- alias: Disable Main bypass after Bedtime
+  hide_entity: yes
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at: '23:00:00'
+  condition:
+    condition: time
+    after: '22:59:59'
+    before: '06:00:00'
+  action:
+  - service: script.disable_main_bypass
+  
+- alias: Disable Main bypass when Asked
+  hide_entity: yes
+  trigger:
+  - platform: state
+    entity_id: input_boolean.main_bypass
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: script.disable_main_bypass
+
+#
+############################################################
+#
+############################################################
+- alias: Set evohome to Away mode if > 20km distant
+  initial_state: off
+  trigger:
+    - platform: numeric_state
+      entity_id: proximity.home
+#     below: 5
+      above: 20000
+  condition: []
+#   condition: and
+#   conditions:
+# Heading home
+#     - condition: template
+#       value_template: '{{ states.proximity.home.attributes.dir_of_travel == "towards" }}'
+# Not already set
+#     - condition: template
+#       value_template: '{{ states.thermostat.stelpro_stzw402_electronic_thermostat_heating_1_11.attributes.temperature != 62 }}'
+# Nobody home
+#     - condition: state
+#       entity_id: group.all_devices
+#       state: 'not_home'
+  action:
+    - service: script.turn_on
+      entity_id: script.evohome_away
+
+#
+############################################################
+# - alias: Disable any Evohome Quick action mode
+# initial_state: off
+# trigger:
+#   - platform: state 
+#     entity_id: group.evohome_quickaction
+#     state: 'off'
+# condition: []
+# action:
+#   - service: script.turn_on
+#     entity_id: script.evohome_deactivate
+
+#      
+- alias: determine_setpoint_bypass_downstairs
+### an automation...
+# hide_entity: True
+  initial_state: off
+  trigger:
+  - platform: state
+    entity_id: sensor.temperature_scheduled_downstairs
+  condition: []
+  action:
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_downstairs
+      value: '{{ trigger.to_state.state | float + 3.5 }}'
+
+
+- alias: determine_setpoint_bypass_upstairs
+### an automation...
+# hide_entity: yes
+  trigger:
+  - platform: state
+    entity_id: sensor.temperature_scheduled_upstairs
+  condition: []
+  action:
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_upstairs
+      value: '{{ trigger.to_state.state | float + 3.5 }}'
+
+
+- alias: push_bypass_setpoint
+### Push the Setpoint (either max, or scheduled + delta) to the Bypass radiator TRV every 5 minutes
+  hide_entity: yes
+# initial_state: off
+  trigger:
+  - platform: time
+    minutes: /5
+    seconds: 00
+  condition: []
+  action:
+  - service: climate.set_temperature
+    data_template:
+      entity_id: climate.danfoss_popp_radiator_thermostat_heating_1
+      temperature: '{{ states.input_number.setpoint_bypass_downstairs.state }}'
+  - service: climate.set_temperature
+    data_template:
+      entity_id: climate.danfoss_popp_radiator_thermostat_heating_1_2
+      temperature: '{{ states.input_number.setpoint_bypass_upstairs.state }}'
+ 
+
+#
+############################################################
+### ZX: Presence project
+
+- alias: Mark kids as Away
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.nab
+    zone: zone.school
+    event: leave
+  condition:
+    condition: time
+    after: '15:29:59'
+    before: '18:00:01'
+    weekday: [ "mon", "tue", "wed", "thu", "fri" ]
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.akb_status_dropdown
+        option: 'Away'
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.rmb_status_dropdown
+        option: 'Away'
+
+- alias: Mark kids as At School
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.nab
+    zone: zone.school
+    event: enter  ## or "leave"
+  condition:
+    condition: time
+    after: '08:29:59'
+    before: '09:30:01'
+    weekday: [ "mon", "tue", "wed", "thu", "fri" ]
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.akb_status_dropdown
+        option: 'At School'
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.rmb_status_dropdown
+        option: 'At School'
+
+        
+- alias: Mark kids as At Capoeria
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.nab
+    zone: zone.capoeria
+    event: enter  ## or "leave"
+  condition:
+    condition: time
+    after: '15:44:59'
+    before: '16:30:01'
+    weekday: [ "mon" ]
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.akb_status_dropdown
+        option: 'At Capoeria'
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.rmb_status_dropdown
+        option: 'At Capoeria'
+
+        
+- alias: Mark kids as At Swimming
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.nab
+    zone: zone.swimming
+    event: enter  ## or "leave"
+  condition:
+    condition: time
+    after: '15:29:59'
+    before: '16:15:01'
+    weekday: [ "tue", "wed" ]
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.akb_status_dropdown
+        option: 'At Swimming'
+    - service: input_select.select_option
+      data_template:
+        entity_id: input_select.rmb_status_dropdown
+        option: 'At Swimming'
+
+        
+#
+#
+- alias: Mark person as Just Arrived
+  trigger:
+    - platform: state
+      entity_id: device_tracker.dwb
+      from: 'not_home'
+      to: 'home'
+    - platform: state
+      entity_id: device_tracker.nab
+      from: 'not_home'
+      to: 'home'
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'device_tracker.dwb' %}
+            input_select.dwb_status_dropdown
+          {% else %}
+            input_select.nab_status_dropdown
+          {% endif %}
+        option: 'Just Arrived'
+
+- alias: Mark person as Home
+  trigger:
+    - platform: state
+      entity_id: input_select.dwb_status_dropdown
+      to: 'Just Arrived'
+      for:
+        minutes: 10
+    - platform: state
+      entity_id: input_select.nab_status_dropdown
+      to: 'Just Arrived'
+      for:
+        minutes: 10
+    - platform: state
+      entity_id: input_select.dwb_status_dropdown
+      from: 'Just Left'
+      to: 'Just Arrived'
+    - platform: state
+      entity_id: input_select.nab_status_dropdown
+      from: 'Just Left'
+      to: 'Just Arrived'
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'input_select.dwb_status_dropdown' %}
+            input_select.dwb_status_dropdown
+          {% else %}
+            input_select.nab_status_dropdown
+          {% endif %}
+        option: 'Home'
+
+- alias: Mark person as Just Left
+  trigger:
+    - platform: state
+      entity_id: device_tracker.dwb
+      from: 'home'
+      to: 'not_home'
+    - platform: state
+      entity_id: device_tracker.nab
+      from: 'home'
+      to: 'not_home'
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'device_tracker.dwb' %}
+            input_select.dwb_status_dropdown
+          {% else %}
+            input_select.nab_status_dropdown
+          {% endif %}
+        option: 'Just Left'
+
+- alias: Mark person as Away
+  trigger:
+    - platform: state
+      entity_id: input_select.dwb_status_dropdown
+      to: 'Just Left'
+      for:
+        minutes: 10
+    - platform: state
+      entity_id: input_select.nab_status_dropdown
+      to: 'Just Left'
+      for:
+        minutes: 10
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'input_select.dwb_status_dropdown' %}
+            input_select.dwb_status_dropdown
+          {% else %}
+            input_select.nab_status_dropdown
+          {% endif %}
+        option: 'Away'
+
+- alias: Mark person as Extended Away
+  trigger:
+    - platform: state
+      entity_id: input_select.dwb_status_dropdown
+      to: 'Away'
+      for:
+        hours: 24
+    - platform: state
+      entity_id: input_select.nab_status_dropdown
+      to: 'Away'
+      for:
+        hours: 24
+  action:
+    - service: input_select.select_option
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'input_select.dwb_status_dropdown' %}
+            input_select.dwb_status_dropdown
+          {% else %}
+            input_select.nab_status_dropdown
+          {% endif %}
+        option: 'Extended Away'

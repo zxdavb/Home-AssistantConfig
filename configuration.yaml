@@ -1,0 +1,365 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude:  !secret home_latitude
+  longitude: !secret home_longitude
+# ZX: use these co-ordinates for testing away mode
+# latitude:    32.8753367
+# longitude: -117.2494053
+
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: !secret home_elevation
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: UTC
+  # Customization file
+  customize: !include customize.yaml
+
+# ZX: My customizations  
+  customize_domain:
+    climate:
+      icon: mdi:radiator
+      max_temp: 25
+      min_temp: 5
+
+  customize_glob:
+    "climate.danfoss_*":
+      icon: mdi:av-timer
+      max_temp: 28
+      min_temp: 4
+
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+http:
+  # Secrets are defined in the file secrets.yaml
+    api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+# discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# Weather prediction
+sensor:
+  - platform: yr
+
+## Current setpoints of Bypass radiators...
+# https://home-assistant.io/components/sensor.template/
+  - platform: template
+    sensors:
+      temperature_scheduled_downstairs:
+        friendly_name: "Downstairs Scheduled"
+        unit_of_measurement: '°C'
+        value_template: "{{ states.climate.main_room.attributes.temperature }}"
+#     setpoint_bypass_downstairs:
+#       friendly_name: "Downstairs Bypass Setpoint"
+#       unit_of_measurement: '°C'
+#       value_template: "{{ states.climate.danfoss_popp_radiator_thermostat_heating_1.attributes.temperature }}"
+      temperature_scheduled_upstairs:
+        friendly_name: "Upstairs Scheduled"
+        unit_of_measurement: '°C'
+        value_template: "{{ states.climate.beans_room.attributes.temperature }}"
+#     setpoint_bypass_upstairs:
+#       friendly_name: "Upstairs Bypass Setpoint"
+#       unit_of_measurement: '°C'
+#       value_template: "{{ states.climate.danfoss_popp_radiator_thermostat_heating_1_2.attributes.temperature }}"
+
+      setpoint_bathroom:
+        friendly_name: "Bathroom Setpoint"
+        value_template: "{{ states.climate.bathroom.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_beans_room:
+        friendly_name: "Bean's room Setpoint"
+        value_template: "{{ states.climate.beans_room.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_bedroom:
+        friendly_name: "Bedroom Setpoint"
+        value_template: "{{ states.climate.bedroom.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_front_room:
+        friendly_name: "Front room Setpoint"
+        value_template: "{{ states.climate.front_room.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_kitchen:
+        friendly_name: "Kitchen Setpoint"
+        value_template: "{{ states.climate.kitchen.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_main_room:
+        friendly_name: "Main room Setpoint"
+        value_template: "{{ states.climate.main_room.attributes.temperature }}"
+        unit_of_measurement: '°C'
+      setpoint_noos_room:
+        friendly_name: "Noo's room Setpoint"
+        value_template: "{{ states.climate.noos_room.attributes.temperature }}"
+        unit_of_measurement: '°C'
+#
+      currtemp_bathroom:
+        friendly_name: "Bathroom Temperature"
+        value_template: "{{ states.climate.bathroom.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_beans_room:
+        friendly_name: "Bean's room Temperature"
+        value_template: "{{ states.climate.beans_room.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_bedroom:
+        friendly_name: "Bedroom Temperature"
+        value_template: "{{ states.climate.bedroom.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_front_room:
+        friendly_name: "Front room Temperature"
+        value_template: "{{ states.climate.front_room.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_kitchen:
+        friendly_name: "Kitchen Temperature"
+        value_template: "{{ states.climate.kitchen.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_main_room:
+        friendly_name: "Main room Temperature"
+        value_template: "{{ states.climate.main_room.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+      currtemp_noos_room:
+        friendly_name: "Noo's room Temperature"
+        value_template: "{{ states.climate.noos_room.attributes.current_temperature }}"
+        unit_of_measurement: '°C'
+#
+# Minimal configuration.yaml entry
+history_graph:
+  graph1:
+    entities:
+      - sensor.currtemp_bathroom
+      - sensor.currtemp_bedroom
+      - sensor.currtemp_beans_room
+      - sensor.currtemp_front_room
+      - sensor.currtemp_kitchen
+      - sensor.currtemp_main_room
+      - sensor.currtemp_noos_room
+
+      
+# Text to speech
+tts:
+  - platform: google
+
+# Cloud
+cloud:
+
+group:      !include      groups.yaml
+automation: !include automations.yaml
+script:     !include     scripts.yaml
+
+## ZX: 
+# https://home-assistant.io/components/recorder/
+recorder: 
+  purge_keep_days: 14
+
+## ZX: My presence detection
+device_tracker:
+  - platform: gpslogger
+    password: !secret gpslogger_password
+
+
+## ZX: My configurations (default scan_interval: 600)
+climate:
+  - platform: honeywell
+    username: !secret honeywell_username
+    password: !secret honeywell_password
+    scan_interval: 300
+
+ifttt:
+  key: !secret webhooks_apikey
+  
+zwave:
+  usb_path: /dev/zwave
+
+## ZX: Target setpoints of Bypass radiators...
+# https://home-assistant.io/components/input_number/
+input_number:
+  setpoint_bypass_downstairs:
+    name: Downstairs
+#   unit_of_measurement: '°C'
+    initial: 26.5
+    min: 4
+    max: 28
+    step: 0.5
+  setpoint_bypass_upstairs:
+    name: Upstairs
+#   unit_of_measurement: '°C'
+    initial: 10.5
+    min: 4
+    max: 28
+    step: 0.5
+
+## ZX: Bypass project
+input_boolean:
+  main_bypass:
+    initial: on
+    name: Main bypass radiator
+    icon: mdi:radiator
+
+  upstairs_bypass:
+    initial: off
+    name: Upstairs bypass radiator
+    icon: mdi:radiator
+
+## ZX: Presence project
+input_select:
+  evohome_quickaction:
+    name: Evohome Quick action mode
+    options:
+      - Economy mode
+      - Away mode
+      - Day Off mode
+      - Heating Off
+      - Custom mode
+    initial: Economy mode
+
+  dwb_status_dropdown:
+    name: David
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - At Work
+    initial: Home
+
+  nab_status_dropdown:
+    name: Naomi
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+    initial: Home
+
+  akb_status_dropdown:
+    name: Alice
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - At School
+    initial: Home
+
+  rmb_status_dropdown:
+    name: Rachael
+    options:
+      - Home
+      - Just Arrived
+      - Just Left
+      - Away
+      - Extended Away
+      - At School
+    initial: Home
+    
+    
+# Example configuration.yaml entry
+zone:
+  - name: School
+    latitude:  51.443208
+    longitude: -2.604144
+    radius: 100
+    icon: mdi:school
+
+  - name: Swimming
+    latitude:  51.442116
+    longitude: -2.600771
+    radius: 100
+    icon: mdi:swim
+
+  - name: Capoeira
+    latitude:  51.462862
+    longitude: -2.589667
+    radius: 100
+    icon: mdi:run
+
+# - name: Work
+#   latitude:  51.126879
+#   longitude: -2.995775
+#   radius: 250
+#   icon: mdi:worker
+#   icon: mdi:briefcase
+
+# - name: Local
+#   latitude:  51.4545
+#   longitude: -2.5879
+#   radius: 60000
+#   icon: mdi:castle
+
+# This will override the default home zone
+# - name: Home
+#   latitude:  !secret home_latitude
+#   longitude: !secret home_longitude
+#   radius: 100
+#   icon: mdi:home
+
+
+proximity:
+  home:
+    devices:
+#     - device_tracker.dwb
+      - device_tracker.nab
+    tolerance: 50
+    unit_of_measurement: mi
+
+    
+## ZX: HTML5 Push Notifications
+notify:
+  - name: HTML5 Notifier
+    platform: html5
+    gcm_api_key:   !secret gcm_server_key
+    gcm_sender_id: !secret gcm_sender_id
+    
+### ZX: Custom components
+# CONFIG_DIR=~/.homeassistant
+# CONFIG_DIR=/home/homeassistant/.homeassistant
+# mkdir -p ${CONFIG_DIR}/custom_components
+# cd ${CONFIG_DIR}/custom_components
+# wget https://raw.githubusercontent.com/rogro82/hass-variables/master/variable.py
+
+#variable:
+#  downstairs_bypass_state:
+#    value: On
+#    restore: True
+#  downstairs_bypass_state:
+#    value: Off
+#    restore: True
+  
+

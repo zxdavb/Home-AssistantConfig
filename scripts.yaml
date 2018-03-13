@@ -1,0 +1,121 @@
+disable_main_bypass:
+# alias: Disable Main bypass
+  sequence:
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_downstairs
+      value: '{{ states.sensor.temperature_scheduled_downstairs.state | float + 2 }}'
+  - service: automation.turn_on
+    entity_id: automation.determine_setpoint_bypass_downstairs
+  - service: automation.trigger
+    entity_id: automation.push_setpoint_bypass_downstairs 
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.main_bypass
+  - service: notify.html5_notifier_davids_laptop
+    data_template: { "title": "Main bypass Disabled", "message": "Main bypass has been disabled via a HASS script." }
+
+enable_main_bypass:
+# alias: Enable Main bypass
+  sequence:
+  - service: automation.turn_off
+    entity_id: automation.determine_setpoint_bypass_downstairs
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_downstairs
+      value: '{{ 28.0 }}'
+  - service: automation.trigger
+    entity_id: automation.push_setpoint_bypass_downstairs 
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.main_bypass
+  - service: notify.html5_notifier_davids_laptop
+    data_template: { "title": "Main bypass Enabled", "message": "Main bypass has been enabled via a HASS script." }
+
+disable_upstairs_bypass:
+# alias: Disable Upstairs bypass
+  sequence:
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_upstairs
+#     value: '{{ 28.0 }}'
+      value: '{{ states.sensor.temperature_scheduled_upstairs.state | float + 3.5 }}'
+  - service: automation.turn_on
+    entity_id: automation.determine_setpoint_bypass_upstairs
+  - service: automation.trigger
+    entity_id: automation.push_setpoint_bypass_upstairs 
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.upstairs_bypass
+  - service: notify.html5_notifier_davids_laptop
+    data_template: { "title": "Upstairs bypass Disabled", "message": "Upstairs bypass has been disabled via a HASS script." }
+
+enable_upstairs_bypass:
+# alias: Enable Upstairs bypass
+  sequence:
+  - service: automation.turn_off
+    entity_id: automation.determine_setpoint_bypass_upstairs
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.setpoint_bypass_upstairs
+      value: '{{ 28.0 }}'
+  - service: automation.trigger
+    entity_id: automation.push_setpoint_bypass_upstairs 
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.upstairs_bypass
+  - service: notify.html5_notifier_davids_laptop
+    data_template: { "title": "Upstairs bypass Enabled", "message": "Upstairs bypass has been enabled via a HASS script." }
+
+#
+############################################################
+evohome_default:
+# Deactivate current (if any) Quick Action mode (indefinitely)
+# alias: Deactivated (no Quick Action mode)
+  alias: No Quick Action mode
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_deactivate"}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Quick action mode has been deactivated." }
+
+evohome_economy:
+# Set to Economy mode for 1 (default) to 24 hours
+  alias: Economy mode
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_economy", "Value1": 4}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Economy mode has been activated." }
+
+evohome_away:
+# Set to Away mode until 1 (default) to 99 mornings
+  alias: Away mode
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_away", "Value1": 99}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Away mode has been activated." }
+
+evohome_day_off:
+# Set to Day Off mode until 1 (default) to 99 mornings
+  alias: Day Off mode
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_dayoff", "Value1": 1}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Day Off mode has been activated." }
+
+evohome_heating_off:
+# Turn to Heating Off (indefinitely)
+  alias: Heating Off
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_heatingoff"}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Frost Protect mode has been activated (heating is 'off')." }
+
+evohome_custom:
+# Set to Custom mode until 1 (default) to 99 mornings
+  alias: Custom mode
+  sequence:
+    - service: ifttt.trigger
+      data_template: {"event":"quickaction_custom", "value1": 1}
+    - service: notify.html5_notifier
+      data_template: { "title": "Evohome Quick Action", "message": "Custom mode has been activated." }

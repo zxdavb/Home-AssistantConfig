@@ -1,0 +1,12 @@
+zwave.aeotec_dsd37_range_extender:
+  new_entity_id: range_extender
+  node_name: Range Extender
+
+# sensor.dwb_status:
+#   entity_picture: #URL to picture
+# sensor.nab_status:
+#   entity_picture: #URL to picture
+# sensor.akb_status:
+#   entity_picture: #URL to picture
+# sensor.rmb_status:
+#   entity_picture: #URL to picture
